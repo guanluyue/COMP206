@@ -1,0 +1,124 @@
+#!/bin/bash
+#Gwen Guan
+#Student ID: 260950108
+
+if [[ -z $1 ]]
+then
+	if test -d "myproject"
+       	then
+		echo "Directory name already exists"
+		exit 1
+	fi
+
+	mkdir -p myproject/{archive,backups,docs/html,docs/txt,assets,database,src/sh,src/c}
+	y=myproject
+#check if $1 is not null
+elif [[ -n $1 ]]
+then
+	sub="/"
+	y=$1
+	#check if it's not a path
+	if [[ "$1" != *"sub"* ]]
+	then
+	#if it's not a path name, create directories with the name given
+		if test -d "$1"
+		then
+			echo "Directory name already exists"
+			exit 1
+		else
+			mkdir -p $1/{archive,backups,docs/html,docs/txt,assets,database,src/sh,src/c}
+		fi
+	fi
+
+	#if a path is given, create a subdirectory in that path
+	#check if it's an absolute path by checking if it starts with "/"
+	if [[ "$1" == "sub"* ]]	
+	then
+		if test -d "$1"
+                then
+                        echo "Directory name already exists"
+                        exit 1
+                else
+                        mkdir -p $1/{archive,backups,docs/html,docs/txt,assets,database,src/sh,src/c}
+                fi
+	fi
+fi
+#$2 Project Initial Files
+#verify if $2 is being used together with $1
+if [[ -n $2 && -n $1 ]]
+then
+        x=$1/src
+	shift
+	for i in "$@"
+	do
+		cp $i $x
+	done
+fi
+
+echo -e \
+	'#!/bin/bash
+#Gwen Guan
+#Student ID: 260950108
+
+if [[ "$#" -eq "0" ]]
+then
+	cd ..
+	cp -r src/* backups
+	cd backups	
+fi
+
+if [[ $1 != -* ]]
+then
+	cd ..
+	for i in "$@"
+	do
+		cp $i backups
+	done
+	cd backups
+else
+	cd ..
+	case "$1" in
+		-x)
+			if [[ "$#" -gt "2" ]]
+			then
+				name="$2"
+				#this method uses a for loop to put all the input files in one string
+				#then tar them together as one file
+				files="src/$3"
+				shift
+				shift
+				shift
+				for i in "$@"
+				do
+					files+=" src/$i"
+				done
+				tar -cvf backups/$name $files
+			else
+				tar -cvf backups/$2 src/*
+			fi
+			;;
+		-z)
+			if [[ "$#" -gt "2" ]]
+                        then
+				name="$2"
+				files="src/$3"
+				shift
+				shift
+				shift
+				for i in "$@"
+				do
+					files+=" src/$i"
+				done
+				tar -zcvf backups/$name $files
+                        else
+                                tar -zcvf backups/$2 src/*
+			fi
+			;;
+		*)
+			echo "That switch is not supported."
+			;;
+	esac
+	cd backups
+fi
+' > $y/backups/mkbackup.sh
+chmod +x $y/backups/mkbackup.sh
